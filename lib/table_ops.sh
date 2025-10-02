@@ -129,6 +129,34 @@ create_table() {
     echo "Table '$table_name' created successfully in database '$dbname'."
 }
 
+list_tables() {
+    local dbname="$1"
+    if [ -z "$dbname" ]; then
+        echo "No database connected. Please connect to a database first."
+        return
+    fi
+
+    local db_path="$DB_ROOT/$dbname"
+    if [ ! -d "$db_path" ]; then
+        echo "Database '$dbname' does not exist."
+        return
+    fi
+
+    local table_dirs=("$db_path"/*)
+    # Check if directory is empty
+    if [ ${#table_dirs[@]} -eq 1 ] && [ "${table_dirs[0]}" == "$db_path/*" ]; then
+        echo "No tables found in database '$dbname'."
+        return
+    fi
+
+    echo "Tables in database '$dbname':"
+    for td in "${table_dirs[@]}"; do
+        if [ -d "$td" ]; then
+            echo "- $(basename "$td")"
+        fi
+    done
+}
+
 insert_into_table() { echo "Insert Into Table - not implemented yet."; }
 select_from_table() { echo "Select From Table - not implemented yet."; }
 delete_from_table() { echo "Delete From Table - not implemented yet."; }
