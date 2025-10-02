@@ -157,6 +157,31 @@ list_tables() {
     done
 }
 
+drop_table() {
+    local dbname="$1"
+    if [ -z "$dbname" ]; then
+        echo "No database connected. Please connect to a database first."
+        return
+    fi
+
+    read -p "Enter table name to drop: " table_name
+
+    local table_dir="$DB_ROOT/$dbname/$table_name"
+
+    if [ ! -d "$table_dir" ]; then
+        echo "Table '$table_name' does not exist in database '$dbname'."
+        return
+    fi
+
+    read -p "Are you sure you want to delete table '$table_name'? (y/n): " confirm
+    if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+        rm -r "$table_dir"
+        echo "Table '$table_name' deleted from database '$dbname'."
+    else
+        echo "Table deletion cancelled."
+    fi
+}
+
 insert_into_table() { echo "Insert Into Table - not implemented yet."; }
 select_from_table() { echo "Select From Table - not implemented yet."; }
 delete_from_table() { echo "Delete From Table - not implemented yet."; }
