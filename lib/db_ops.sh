@@ -1,52 +1,61 @@
 #!/bin/bash
 
-# Source table operations dispatcher
-source ./lib/table_ops.sh
-
-create_db() {
-    read -p "Enter database name: " dbname
-    if [[ "$dbname" =~ ^[A-Za-z0-9_]+$ ]]; then
-        if [ -d "$DB_ROOT/$dbname" ]; then
-            echo "Database '$dbname' already exists."
-        else
-            mkdir "$DB_ROOT/$dbname"
-            echo "Database '$dbname' created."
-        fi
-    else
-        echo "Invalid name. Only letters, numbers, and underscores allowed."
+create_database() {
+    read -p "Enter database name: " db_name
+    
+    if ! validate_name "$db_name"; then
+        echo "Invalid name. Use letters, numbers, underscore (start with letter)"
+        return
     fi
+    
+    if [ -d "$DB_ROOT/$db_name" ]; then
+        echo "Database '$db_name' already exists"
+        return
+    fi
+    
+    mkdir -p "$DB_ROOT/$db_name"
+    echo "Database '$db_name' created"
 }
 
-list_dbs() {
+list_databases() {
+    echo ""
     echo "Existing Databases:"
-    if [ -z "$(ls -A "$DB_ROOT")" ]; then
-        echo "   (no databases found)"
-    else
-        ls "$DB_ROOT"
+    
+    if [ -z "$(ls -A "$DB_ROOT" 2>/dev/null)" ]; then
+        echo "   (no databases yet)"
+        return
     fi
+    
+    for db in "$DB_ROOT"/*; do
+        [ -d "$db" ] && echo "   - $(basename "$db")"
+    done
 }
 
-connect_db() {
-    read -p "Enter database name: " dbname
-    if [ -d "$DB_ROOT/$dbname" ]; then
-        echo "Connected to '$dbname'."
-        table_menu "$dbname"
-    else
-        echo "Database '$dbname' does not exist."
+connect_database() {
+    read -p "Enter database name: " db_name
+    
+    if ! [ -d "$DB_ROOT/$db_name" ]; then
+        echo "Database '$db_name' does not exist"
+        return
     fi
+    
+    echo "Connected to '$db_name'"
+    table_menu "$db_name"
 }
 
-drop_db() {
-    read -p "Enter database name to drop: " dbname
-    if [ -d "$DB_ROOT/$dbname" ]; then
-        read -p "Are you sure you want to delete '$dbname'? (y/n): " confirm
-        if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
-            rm -r "$DB_ROOT/$dbname"
-            echo "Database '$dbname' deleted."
-        else
-            echo "Drop cancelled."
-        fi
+drop_database() {
+    read -p "Enter database name: " db_name
+    
+    if ! [ -d "$DB_ROOT/$db_name" ]; then
+        echo "Database '$db_name' does not exist"
+        return
+    fi
+    
+    read -p "Delete '$db_name' permanently? (y/n): " confirm
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        rm -rf "$DB_ROOT/$db_name"
+        echo "Database '$db_name' deleted"
     else
-        echo "Database '$dbname' does not exist."
+        echo "Cancelled"
     fi
 }

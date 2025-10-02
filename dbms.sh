@@ -1,25 +1,34 @@
 #!/bin/bash
 
 DB_ROOT="./databases"
-
-# Source helper functions
-source ./lib/utils.sh
-source ./lib/db_ops.sh
-
-# Ensure DB_ROOT exists
 mkdir -p "$DB_ROOT"
 
-# Main loop
-while true; do
-    print_main_menu
-    choice=$(read_choice "Enter your choice: ")
+# Source modules
+source ./lib/utils.sh
+source ./lib/db_ops.sh
+source ./lib/table_ops.sh
 
+# Main Menu Loop
+while true; do
+    echo ""
+    echo "=============================="
+    echo "    Bash DBMS - Main Menu"
+    echo "=============================="
+    echo "1. Create Database"
+    echo "2. List Databases"
+    echo "3. Connect to Database"
+    echo "4. Drop Database"
+    echo "5. Exit"
+    echo "------------------------------"
+    
+    read -p "Enter choice: " choice
+    
     case $choice in
-        1) create_db ;;
-        2) list_dbs ;;
-        3) connect_db ;;
-        4) drop_db ;;
-        5) echo "Exiting..."; break ;;
-        *) echo "Invalid option";;
+        1) create_database ;;
+        2) list_databases ;;
+        3) connect_database ;;
+        4) drop_database ;;
+        5) echo "Goodbye!"; exit 0 ;;
+        *) echo "Invalid choice" ;;
     esac
 done
