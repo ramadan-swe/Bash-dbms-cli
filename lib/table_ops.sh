@@ -6,6 +6,7 @@ print_table_menu(){
     echo "=============================="
     echo "1. Create table"
     echo "2. List tables"
+    echo "3. Select table"
     echo "3. drop tables"
     echo "4. Insert into Table"
     echo "5. Delete From Table"
@@ -182,7 +183,70 @@ drop_table() {
     fi
 }
 
-insert_into_table() { echo "Insert Into Table - not implemented yet."; }
+insert_into_table() { 
+    
+    local db_name="$1"
+    read -p "Enter table name to insert into: " table_name
+
+    local table_dir_path="$DB_ROOT/$db_name/$table_name"
+    local data_file_path="$table_dir_path/data"
+    local meta_file_path="$table_dir_path/metadata"
+
+    if [ ! -d "$table_dir_path" ]; then
+        echo "Error: Table '$table_name' not found."
+        return
+    fi
+
+    # Read the single-line metadata string.
+    local meta_string=$(head -n 1 "$meta_file_path")
+    
+    # THE FIX: Use awk to pre-load ALL metadata into separate arrays first.
+    # This separates file-reading from user-input.
+    local columns=($(awk 'BEGIN{RS=","; FS=":"} {print $1}' <<< "$meta_string"))
+    local types=($(awk 'BEGIN{RS=","; FS=":"} {print $2}' <<< "$meta_string"))
+    local pk_flags=($(awk 'BEGIN{RS=","; FS=":"} {print $3}' <<< "$meta_string"))
+
+    local new_row_values=()
+    
+    # This 'for' loop is not reading from a file, so it will correctly
+    # wait for your keyboard input.
+    for (( i=0; i<${#columns[@]}; i++ )); do
+        local col_name="${columns[i]}"
+        local col_type="${types[i]}"
+
+        read -p "Enter value for '$col_name' ($col_type): " value
+
+        if [[ "$col_type" == "int" && ! "$value" =~ ^-?[0-9]+$ ]]; then
+            echo "Error: Invalid input. '$col_name' must be an integer."
+            return
+        fi
+        if [[ "$value" == *","* ]]; then
+            echo "Error: Value cannot contain commas."
+            return
+        fi
+        
+        new_row_values+=("$value")
+    done
+
+    # Check for Primary Key uniqueness.
+    for (( i=0; i<${#pk_flags[@]}; i++ )); do
+        if [[ "${pk_flags[i]}" -eq 1 ]]; then
+            local pk_col_index=$((i + 1))
+            local pk_value="${new_row_values[i]}"
+            
+            if ! awk -F, -v val="$pk_value" -v col="$pk_col_index" 'NR > 1 && $col == val { exit 1 }' "$data_file_path"; then
+                echo "Error: Primary key violation. A record with value '$pk_value' already exists."
+                return
+            fi
+            # Since there's only one PK, we can stop checking.
+            break 
+        fi
+    done
+
+    printf "%s\n" "$(IFS=,; echo "${new_row_values[*]}")" >> "$data_file_path"
+    echo "Data inserted successfully."
+
+ }
 select_from_table() { echo "Select From Table - not implemented yet."; }
 delete_from_table() { echo "Delete From Table - not implemented yet."; }
 update_table() { echo "Update Table - not implemented yet."; }
