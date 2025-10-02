@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Source table operations dispatcher
+source ./lib/table_ops.sh
+
 create_db() {
     read -p "Enter database name: " dbname
     if [[ "$dbname" =~ ^[A-Za-z0-9_]+$ ]]; then
@@ -27,7 +30,8 @@ connect_db() {
     read -p "Enter database name: " dbname
     if [ -d "$DB_ROOT/$dbname" ]; then
         echo "Connected to '$dbname'."
-        # TODO: call table menu later (Phase 2)
+        table_menu "$dbname"
+        unset CURRENT_DB
     else
         echo "Database '$dbname' does not exist."
     fi
