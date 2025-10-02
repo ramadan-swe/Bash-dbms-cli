@@ -30,12 +30,13 @@ table_menu(){
         case $choice in
             1) create_table "$dbname_arg" ;;
             2) list_tables "$dbname_arg" ;;
-            3) drop_table "$dbname_arg" ;;
-            4) insert_into_table "$dbname_arg" ;;
-            5) delete_from_table "$dbname_arg" ;;
-            6) update_table "$dbname_arg" ;;
-            7) echo "Backing to main menu "; break ;;
-            8) echo "Exiting..."; exit 0 ;;
+            3) select_from_table "$dbname_arg" ;;
+            4) drop_table "$dbname_arg" ;;
+            5) insert_into_table "$dbname_arg" ;;
+            6) delete_from_table "$dbname_arg" ;;
+            7) update_table "$dbname_arg" ;;
+            8) echo "Backing to main menu "; break ;;
+            9) echo "Exiting..."; exit 0 ;;
             *) echo "Invalid option";;
         esac
     done    
@@ -247,6 +248,56 @@ insert_into_table() {
     echo "Data inserted successfully."
 
  }
-select_from_table() { echo "Select From Table - not implemented yet."; }
+select_from_table() { 
+    local db_name="$1"
+    read -p "Enter table name to select from: " table_name
+    local table_dir_path="$DB_ROOT/$db_name/$table_name"
+    local data_file_path="$table_dir_path/data"
+    
+    if [ ! -d "$table_dir_path" ]; then
+        echo "Error: Table '$table_name' not found."
+        return
+    fi
+
+    local line_count=$(wc -l < "$data_file_path")
+    if [ $line_count -eq 0 ]; then
+        echo "Table '$table_name' is empty and has no header."
+        return
+    fi
+
+    while true ; do
+        echo 
+        echo "1. select all table " 
+        echo "2. slect a row"
+        echo "3. select a column"
+        echo "4. Backing to table menu "
+        echo "5. exit."; 
+        echo
+        read -p "Enter your select choice: " choice
+        
+        case $choice in
+            1) 
+            
+            awk -F',' '{printf "%-5s %-10s %-5s\n", $1, $2, $3}' $data_file_path
+            ;;
+            2) 
+            read -p "select row number : " row
+            awk -F',' -v r="$row" '$1==r {print $0}' "$data_file_path"
+            ;;
+            3) 
+            read -p "Enter column number: " col
+            awk -F',' -v c="$col" '{print $c}' "$data_file_path"
+            ;;
+            4)  break ;;
+            5)  exit 0 ;;
+            *) echo "Invalid option";;
+        esac
+    done
+
+
+
+
+
+ }
 delete_from_table() { echo "Delete From Table - not implemented yet."; }
 update_table() { echo "Update Table - not implemented yet."; }
