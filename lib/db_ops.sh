@@ -31,7 +31,6 @@ connect_db() {
     if [ -d "$DB_ROOT/$dbname" ]; then
         echo "Connected to '$dbname'."
         table_menu "$dbname"
-        unset CURRENT_DB
     else
         echo "Database '$dbname' does not exist."
     fi
