@@ -332,4 +332,17 @@ delete_from_table() {
     done
 
  }
-update_table() { echo "Update Table - not implemented yet."; }
+update_table() { 
+    local db_name="$1"
+    read -p "Enter table name to delete from: " table_name
+    local table_dir_path="$DB_ROOT/$db_name/$table_name"
+    local data_file_path="$table_dir_path/data"
+    
+    if [ ! -d "$table_dir_path" ]; then
+        echo "Error: Table '$table_name' not found."
+        return
+    fi
+
+    
+
+ }
