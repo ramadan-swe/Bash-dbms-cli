@@ -7,12 +7,12 @@ print_table_menu(){
     echo "1. Create table"
     echo "2. List tables"
     echo "3. Select table"
-    echo "3. drop tables"
-    echo "4. Insert into Table"
-    echo "5. Delete From Table"
-    echo "6. Update Table"
-    echo "7. Back to Main Menu"
-    echo "8. Exit"
+    echo "4. drop tables"
+    echo "5. Insert into Table"
+    echo "6. Delete From Table"
+    echo "7. Update Table"
+    echo "8. Back to Main Menu"
+    echo "9. Exit"
     echo "------------------------------"
 }
 
@@ -294,10 +294,42 @@ select_from_table() {
         esac
     done
 
+ }
+delete_from_table() { 
+    local db_name="$1"
+    read -p "Enter table name to delete from: " table_name
+    local table_dir_path="$DB_ROOT/$db_name/$table_name"
+    local data_file_path="$table_dir_path/data"
+    
+    if [ ! -d "$table_dir_path" ]; then
+        echo "Error: Table '$table_name' not found."
+        return
+    fi
 
+    while true ; do
+        echo 
+        echo "1. delete all data in the table " 
+        echo "2. slect a row to deleted"
+        echo "3. Backing to table menu "
+        echo "4. exit."; 
+        echo
+        read -p "Enter your select choice: " choice
+        
+        case $choice in
+            1) 
+            
+            truncate -s 0 "$data_file_path"
 
-
+            ;;
+            2) 
+            read -p "select row number : " row
+            awk -F',' -v r="$row" '$1!=r {print $0}' "$data_file_path" > tmp && mv tmp "$data_file_path" 
+            ;;
+            3)  break ;;
+            4)  exit 0 ;;
+            *) echo "Invalid option";;
+        esac
+    done
 
  }
-delete_from_table() { echo "Delete From Table - not implemented yet."; }
 update_table() { echo "Update Table - not implemented yet."; }
